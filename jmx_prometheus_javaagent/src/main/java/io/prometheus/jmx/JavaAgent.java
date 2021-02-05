@@ -2,6 +2,7 @@ package io.prometheus.jmx;
 
 import java.io.File;
 import java.lang.instrument.Instrumentation;
+import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,6 +10,9 @@ import java.util.regex.Pattern;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.HTTPServer;
 import io.prometheus.client.hotspot.DefaultExports;
+
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 public class JavaAgent {
 
@@ -23,6 +27,10 @@ public class JavaAgent {
         String host = "0.0.0.0";
 
         try {
+            MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+            mBeanServer.registerMBean(new CertificateExpiry(123), new ObjectName("certificate:name=expiry,cert_path=/foo.p12"));
+            mBeanServer.registerMBean(new CertificateExpiry(456), new ObjectName("certificate:name=expiry,cert_path=/bar.p12"));
+
             Config config = parseConfig(agentArgument, host);
 
             new BuildInfoCollector().register();
